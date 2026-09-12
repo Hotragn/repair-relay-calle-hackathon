@@ -1,5 +1,6 @@
 """Repair Relay: bounded repair availability calls and durable result review."""
 import argparse
+import copy
 import hashlib
 import json
 import os
@@ -125,16 +126,32 @@ def send(db, case, approval, transport=api):
 
 def assess(case, result):
     """Evidence presence does not establish semantic truth; a person reviews it."""
+    invalid = {"state": "needs_review", "reason": "Malformed provider response", "windows": []}
+    if not isinstance(result, dict):
+        return invalid
     if result.get("status") != "completed" or result.get("task_completed") is not True:
         return {"state": "needs_review", "reason": "Provider did not report a completed task", "windows": []}
     recipients = result.get("recipients", [])
-    if len(recipients) != 1:
+    if not isinstance(recipients, list) or len(recipients) != 1 or not isinstance(recipients[0], dict):
         return {"state": "needs_review", "reason": "Expected exactly one recipient result", "windows": []}
     recipient = recipients[0]
     data = recipient.get("structured_result") or {}
+    if not isinstance(data, dict):
+        return invalid
     quote = data.get("quote", "")
-    turns = [t.get("text", "") for a in recipient.get("attempts", [])
-             for t in a.get("transcript_turns", []) if t.get("speaker") == "user"]
+    attempts = recipient.get("attempts", [])
+    if not isinstance(attempts, list) or not all(isinstance(a, dict) for a in attempts):
+        return invalid
+    turns = []
+    for attempt in attempts:
+        transcript = attempt.get("transcript_turns", [])
+        if not isinstance(transcript, list):
+            return invalid
+        for turn in transcript:
+            if not isinstance(turn, dict) or not isinstance(turn.get("text"), str):
+                return invalid
+            if turn.get("speaker") == "user":
+                turns.append(turn["text"])
     supported = isinstance(quote, str) and bool(quote.strip()) and any(quote in t for t in turns)
     ids = data.get("available_window_ids", [])
     known = {w["id"]: w for w in case["windows"]}
@@ -154,8 +171,12 @@ def refresh(db, digest, transport=api):
     result = transport("GET", "/v1/calls/" + row["call_id"])
     assessment = assess(json.loads(row["case_json"]), result)
     with db:
-        db.execute("UPDATE calls SET result_json=?,state=? WHERE digest=?",
-                   (json.dumps(result), assessment["state"], digest))
+        serialized = json.dumps(result, sort_keys=True)
+        previous = json.loads(row["result_json"]) if row["result_json"] else None
+        changed = previous != result
+        db.execute("UPDATE calls SET result_json=?,state=?,decision=?,reason=? WHERE digest=?",
+                   (serialized, assessment["state"], None if changed else row["decision"],
+                    None if changed else row["reason"], digest))
     return assessment
 
 
@@ -194,7 +215,10 @@ def main():
         if args.command in ("preview", "send", "evaluate"):
             case = validate_case(json.loads(args.case.read_text(encoding="utf-8")))
         if args.command == "preview":
-            output = preview(case)
+            output = copy.deepcopy(preview(case))
+            phone = output["request"]["recipients"][0]["phones"][0]
+            output["request"]["recipients"][0]["phones"] = ["+1******" + phone[-4:]]
+            output["note"] = "Destination masked for display; digest binds the complete destination in your case file."
         elif args.command == "evaluate":
             output = assess(case, json.loads(args.result.read_text(encoding="utf-8")))
         else:

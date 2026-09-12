@@ -19,7 +19,7 @@ The bundled case uses a fictional US number and is marked synthetic. Live dispat
 ## Workflow
 
 1. Prepare a case with the organization, repair, consented US recipient, and candidate windows with UTC offsets.
-2. Review `preview` output, which includes the complete request and an approval digest binding the exact contents.
+2. Review `preview` output and the destination in your private case file. Console output masks the phone number; the approval digest binds the complete destination and exact request contents.
 3. Set `CALLE_API_KEY` in your process environment using the key from the official CALL-E dashboard. Keep real case files and databases private.
 4. With authorization to place this particular call, run `python relay.py send private/case.json --approve DIGEST`.
 5. Run `python relay.py refresh DIGEST` to retrieve the result. Inspect the recipient quote and available windows.
@@ -36,7 +36,14 @@ The SQLite database defaults to `relay.sqlite3`; choose another path with the gl
 - An uncertain creation must be reconciled through the provider dashboard. There is deliberately no automatic retry or invented cancellation endpoint. Use the provider's supported controls to stop an active task; this prototype cannot cancel a call.
 - Availability collection never authorizes repairs, agrees to prices, or books an appointment. Acceptance records only the coordinator's review of availability.
 - Quote matching checks evidence presence, not semantic truth. The human must inspect ambiguity, corrections, and the surrounding conversation. Do not use the result as an autonomous booking signal.
-- This version supports one US recipient per case and English calls. Production scheduling, multi-contact intersections, a graphical interface, and live-provider validation remain unfinished.
+- This version supports one US recipient per case and English calls. Production scheduling, multi-contact intersections, and live-provider validation remain unfinished.
+- Use only for routine repair availability. It does not diagnose repairs, provide medical/legal/financial advice, or handle emergencies. No recurring schedules are created.
+
+## Interactive review console
+
+Run `python -m http.server 8766 --bind 127.0.0.1 --directory console/dist` and open http://127.0.0.1:8766. Review the four fictional responses, open their transcripts, accept supported availability, mark follow-ups, and export a coordinator handoff. Session capacity prevents adding more proposals than places. No appointment is booked and this static console cannot place calls. Closing or resetting the tab discards review state; exported handoffs remain on your computer.
+
+An optional CALL-E result import displays a local transcript for manual inspection. Imported responses lack the original case windows and cannot be accepted into the sample session. The console and Python live-call workflow are separate at this stage; there is no automatic database synchronization.
 
 ## Attribution and provenance
 
@@ -46,4 +53,4 @@ The adapter follows the official [CALL-E API examples](https://github.com/CALLE-
 
 ## Submission work remaining
 
-Authenticate CALL-E, verify the real response contract, conduct an authorized test call, improve the end-to-end experience, obtain event-specific registration agreement and factual questionnaire answers, create the required public contribution PR, record a public demo video, submit through Devpost, and verify submission receipt.
+Registration and the Devpost draft are in place. Remaining: authenticate CALL-E, verify the real response contract, conduct an authorized test call, connect the end-to-end experience, create the required public contribution PR, record a public demo video, submit through Devpost, and verify submission receipt.

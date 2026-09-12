@@ -80,6 +80,26 @@ class RelayTests(unittest.TestCase):
         self.result['task_completed'] = False
         self.assertEqual(assess(self.case, self.result)['state'], 'needs_review')
 
+    def test_malformed_provider_fields_do_not_crash(self):
+        for result in [None, [], {'status': 'completed', 'task_completed': True, 'recipients': None},
+                       {'status': 'completed', 'task_completed': True, 'recipients': [None]}]:
+            with self.subTest(result=result):
+                self.assertEqual(assess(self.case, result)['state'], 'needs_review')
+        self.result['recipients'][0]['attempts'] = [{'transcript_turns': None}]
+        self.assertEqual(assess(self.case, self.result)['state'], 'needs_review')
+
+    def test_changed_result_invalidates_review(self):
+        self.case['synthetic'] = False
+        digest = preview(self.case)['approval_digest']
+        send(self.db, self.case, digest, lambda *args: {'id': 'call_test'})
+        refresh(self.db, digest, lambda *args: self.result)
+        decide(self.db, digest, 'accept_availability', 'Reviewed original transcript')
+        refresh(self.db, digest, lambda *args: self.result)
+        self.assertEqual(self.db.execute('SELECT decision FROM calls').fetchone()[0], 'accept_availability')
+        self.result['recipients'][0]['structured_result']['outcome'] = 'unavailable'
+        refresh(self.db, digest, lambda *args: self.result)
+        self.assertIsNone(self.db.execute('SELECT decision FROM calls').fetchone()[0])
+
 
 if __name__ == '__main__':
     unittest.main()
