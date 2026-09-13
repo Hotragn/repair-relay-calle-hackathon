@@ -42,9 +42,11 @@ The SQLite database defaults to `relay.sqlite3`; choose another path with the gl
 
 ## Interactive review console
 
+For actual saved call results, run `python review_server.py --db path/to/private/relay.sqlite3`, then open http://127.0.0.1:8770. This local desk reads the Python database, shows the complete conversation, saves review decisions, and exports a capacity-checked handoff. A changed result invalidates stale browser reviews. The server binds only to loopback, rejects foreign origins for writes, and cannot place calls. Keep its database and downloads private. Stop it with Ctrl+C. Run `refresh` through the CLI and reload the desk to load newer provider results.
+
 Run `python -m http.server 8766 --bind 127.0.0.1 --directory console/dist` and open http://127.0.0.1:8766. Review the four fictional responses, open their transcripts, accept supported availability, mark follow-ups, and export a coordinator handoff. Session capacity prevents adding more proposals than places. No appointment is booked and this static console cannot place calls. Closing or resetting the tab discards review state; exported handoffs remain on your computer.
 
-An optional CALL-E result import displays a local transcript for manual inspection. Imported responses lack the original case windows and cannot be accepted into the sample session. The console and Python live-call workflow are separate at this stage; there is no automatic database synchronization.
+An optional CALL-E result import in the static sample displays a local transcript for manual inspection. Imported responses lack the original case windows and cannot be accepted into the sample session. Use the local review desk above for connected database review; the hosted sample remains separate.
 
 ## Attribution and provenance
 
@@ -54,4 +56,4 @@ The adapter follows the official [CALL-E API examples](https://github.com/CALLE-
 
 ## Submission work remaining
 
-Registration, the Devpost draft, a successful authorized live call, and the required public contribution PR are in place. Remaining: connect the browser review experience to the Python workflow, record a public demo video, complete the Devpost entry, and verify submission receipt.
+Registration, the Devpost draft, a successful authorized live call, a connected local review desk, and the required public contribution PR are in place. Remaining: record a public demo video, complete the Devpost entry, and verify submission receipt.
