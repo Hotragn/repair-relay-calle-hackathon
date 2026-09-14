@@ -4,7 +4,13 @@ Collect repair-appointment availability by phone, then review the recipient's wo
 
 **Development prototype.** Local tests use synthetic fixtures. One authorized live CALL-E test completed on September 13, 2026 UTC: request creation, result retrieval, recipient-quote review, and a capacity-checked handoff succeeded. The call explicitly described a fictional workshop test. Private contact information and transcripts are not published. There is no final hackathon entry, booked appointment, or established user-impact claim.
 
-## Try without calling anyone
+## Try the public sample
+
+[Open the interactive availability desk](https://hotragn.github.io/repair-relay-calle-hackathon/) — no installation or API key required. All contacts and conversations in this sample are fictional.
+
+Set workshop capacity to one, read Maya's transcript, and accept her availability. Select Jo and attempt a second acceptance: the desk refuses because the session is full. Select Theo to inspect his correction and mark it for follow-up. The sample prepares proposals; it places no calls and books no appointments.
+
+## Try locally without calling anyone
 
 Requires Python 3.11 or later; no third-party Python packages.
 
@@ -54,6 +60,6 @@ Original application code was created with OpenAI Codex assistance for the CALL-
 
 The adapter follows the official [CALL-E API examples](https://github.com/CALLE-AI/call-e-integrations#api), inspected September 12, 2026. CALL-E is a separately operated service with its own terms. No sponsor code or assets are bundled in this application.
 
-## Submission work remaining
+## Hackathon entry
 
-Registration, the Devpost draft, a successful authorized live call, a connected local review desk, and the required public contribution PR are in place. Remaining: record a public demo video, complete the Devpost entry, and verify submission receipt.
+[Repair Relay on Devpost](https://devpost.com/software/repair-relay-ia0o31) was entered in CALL-E on September 13, 2026. [Narrated overview video](https://www.youtube.com/watch?v=x7Or7F7JZw4). The public sample demonstrates fictional review cases; the Python workflow and connected local review desk support authorized CALL-E results. No prize or measured-impact claim is made.
